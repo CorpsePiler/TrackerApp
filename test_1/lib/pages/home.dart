@@ -33,7 +33,8 @@ class HomePage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TimetablePage()),
+                        MaterialPageRoute(builder: (context) => TimetablePage(apiUrl: 
+                        'https://script.google.com/macros/s/AKfycbzyHKMa0ICnDPWBZbHfbKLU-riF3x5nJ9ItFWKtaZ1KjfWmUThIyfV4cra1OF9xORb6/exec',)),
                       );
                     },
                     style: ElevatedButton.styleFrom(
