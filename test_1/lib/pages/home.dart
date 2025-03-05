@@ -17,7 +17,7 @@ class HomePage extends StatelessWidget {
             fontSize: 30,
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 254, 250, 121),
+        backgroundColor: const Color.fromARGB(255, 63, 60, 153),
         centerTitle: true,
       ),
       body: Scrollbar(
