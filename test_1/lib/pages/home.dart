@@ -1,8 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'timetable.dart'; 
-import 'bus.dart';       
+import 'package:test_1/pages/events_and_holidays.dart';
+import 'timetable.dart';
+import 'bus.dart';
 import 'mess.dart';
 import 'debt_tracker.dart';
 
@@ -12,93 +13,83 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.deepPurple[100],
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Tracker',
           style: TextStyle(
-            color: const Color.fromARGB(255, 0, 0, 0),
-            fontSize: 30,
+            color: Colors.black,
+            fontSize: 40,
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 63, 60, 153),
+        backgroundColor: Colors.deepPurple[800],
         centerTitle: true,
-      ),
-
-      //DRAWER HEADER
-      drawer: Drawer(
-        backgroundColor: Colors.purple[50],
-        child: Column(
-          children: [
-            DrawerHeader(child: Icon(
-              Icons.book,
-              size: 40
-            ))
-          ],
-        )
       ),
 
 
 
       body: ListView(
         children: [
-         ListTile(
-          minTileHeight: 165,
-          tileColor: Colors.deepPurple[800],
-            leading: Icon(Icons.directions_bus, size: 30, color: Colors.white),
-            minLeadingWidth: 30,
-            title: Text('Bus', textScaleFactor: 2),
+          ListTile(
+            contentPadding: const EdgeInsets.only(left: 15, right: 50),
+            minTileHeight: 160,
+            tileColor: Colors.deepPurple[800],
+            leading: const Icon(Icons.directions_bus, size: 40, color: Colors.white),
+            title: const Text('Bus', textScaleFactor: 2.4, textAlign: TextAlign.center),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => BusPage()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const BusPage()));
             },
           ),
           ListTile(
-            minTileHeight: 165,
+            contentPadding: const EdgeInsets.only(left: 15, right: 50),
+            minTileHeight: 160,
             tileColor: Colors.deepPurple[600],
-            leading: Icon(Icons.fastfood, size: 30, color: Colors.white),
-            title: Text('Mess', textScaleFactor: 2),
+            leading: const Icon(Icons.fastfood, size: 40, color: Colors.white),
+            title: const Text('Mess', textScaleFactor: 2.4, textAlign: TextAlign.center),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => MessPage()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const MessPage()));
             },
           ),
           ListTile(
-            minTileHeight: 165,
+            contentPadding: const EdgeInsets.only(left: 15, right: 50),
+            minTileHeight: 160,
             tileColor: Colors.deepPurple[400],
-            leading: Icon(Icons.schedule, size: 30, color: Colors.white),
-            title: Text('Timetable', textScaleFactor: 2),
+            leading: const Icon(Icons.schedule, size: 40, color: Colors.white),
+            title: const Text('Timetable', textScaleFactor: 2.4, textAlign: TextAlign.center),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TimetablePage()),
+                MaterialPageRoute(
+                  builder: (context) => const TimetablePage(),
+                ),
               );
             },
           ),
           ListTile(
-            minTileHeight: 165,
+            contentPadding: const EdgeInsets.only(left: 15, right: 50),
+            minTileHeight: 160,
             tileColor: Colors.deepPurple[200],
-            leading: Icon(Icons.calendar_month, size: 30, color: Colors.white),
-            title: Text('Events and Holidays', textScaleFactor: 2),
+            leading: const Icon(Icons.calendar_month, size: 40, color: Colors.white),
+            title: const Text('Events and Holidays', textScaleFactor: 2.4, textAlign: TextAlign.center),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TimetablePage()),
+                MaterialPageRoute(
+                  builder: (context) => const EHPage(),
+                ),
               );
             },
           ),
           ListTile(
-            minTileHeight: 165,
+            contentPadding: const EdgeInsets.only(left: 15, right: 50),
+            minTileHeight: 160,
             tileColor: Colors.deepPurple[100],
-            leading: Icon(Icons.monetization_on, size: 30, color: Colors.white),
-            title: Text('Debt Tracker', textScaleFactor: 2),
+            leading: const Icon(Icons.monetization_on, size: 40, color: Colors.white),
+            title: const Text('Debt Tracker', textScaleFactor: 2.4, textAlign: TextAlign.center),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => DebtTrackerPage()),
+                MaterialPageRoute(builder: (context) => const DebtTrackerPage()),
               );
             },
           ),
@@ -107,4 +98,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
