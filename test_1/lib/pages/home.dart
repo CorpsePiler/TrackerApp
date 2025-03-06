@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
           ListTile(
             contentPadding: const EdgeInsets.only(left: 15, right: 50),
             minTileHeight: 160,
-            tileColor: Colors.deepPurple[200],
+            tileColor: const Color.fromRGBO(179, 157, 219, 1),
             leading: const Icon(Icons.calendar_month, size: 40, color: Colors.white),
             title: const Text('Events and Holidays', textScaleFactor: 2.4, textAlign: TextAlign.center),
             onTap: () {
