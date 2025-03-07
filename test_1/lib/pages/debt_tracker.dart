@@ -144,8 +144,28 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Debt Tracker")),
-      body: debts.isEmpty
+appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: const Color(0xFFE0E2DB)),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: const Color.fromARGB(255, 62, 78, 75),
+        title: const Text(
+          'Debt Tracker',
+          style: TextStyle(
+            color: const Color(0xFFE0E2DB),
+            fontSize: 30,
+          ),
+        ),
+        centerTitle: true,
+      ),
+
+
+
+      backgroundColor: const Color.fromARGB(255, 62, 78, 75),
+          body: debts.isEmpty
           ? const Center(child: Text("No debts added yet!"))
           : ListView.builder(
               itemCount: debts.length,
@@ -156,22 +176,22 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
                   direction: DismissDirection.endToStart,
                   onDismissed: (direction) => _deleteDebt(index),
                   background: Container(
-                    color: Colors.red,
+                    color: const Color.fromARGB(255, 232, 76, 65),
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 20),
                     child: const Icon(Icons.delete, color: Colors.white),
                   ),
                   child: Card(
-                    color: Colors.purple[100],
+                    color: const Color.fromARGB(255, 122, 133, 133),
                     margin: const EdgeInsets.symmetric(
                         horizontal: 15, vertical: 5),
                     child: ListTile(
                       title: Text(debt.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: const Color(0xFFE0E2DB))),
                       subtitle:
-                          Text("${debt.type} ₹${debt.amount.toStringAsFixed(2)}"),
+                          Text("${debt.type} ₹${debt.amount.toStringAsFixed(2)}", style: TextStyle(color: const Color(0xFFE0E2DB))),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: const Color(0xFFE0E2DB)),
                         onPressed: () => _deleteDebt(index),
                       ),
                     ),
@@ -180,8 +200,9 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
               },
             ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color.fromARGB(255, 122, 133, 133),
         onPressed: _addDebt,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: const Color(0xFFE0E2DB)),
       ),
     );
   }

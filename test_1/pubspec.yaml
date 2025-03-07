@@ -92,6 +92,12 @@ flutter:
     - family: Sacrifice
       fonts:
       - asset: fonts/Sacrifice.ttf
+    - family: Roboto
+      fonts:
+      - asset: fonts/roboto.ttf
+    - family: round
+      fonts:
+      - asset: fonts/round.ttf
 
 
   #   - family: Trajan Pro

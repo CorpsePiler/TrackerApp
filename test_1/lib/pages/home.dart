@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:test_1/pages/events_and_holidays.dart';
 import 'timetable.dart';
@@ -8,92 +6,132 @@ import 'mess.dart';
 import 'debt_tracker.dart';
 
 class HomePage extends StatelessWidget {
+  ThemeData get theme => ThemeData(
+        primarySwatch: Colors.green,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 62, 78, 75), // Darker background
+        appBarTheme: const AppBarTheme(
+          backgroundColor: const Color.fromARGB(255, 62, 78, 75), // Medium-dark AppBar
+          centerTitle: true,
+        ),
+      );
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple[100],
+      backgroundColor: const Color.fromARGB(255, 62, 78, 75), // Darker background
       appBar: AppBar(
+        toolbarHeight: 100,
         title: const Text(
           'Tracker',
           style: TextStyle(
-            color: Colors.black,
+            color: Color(0xFFE0E2DB), // Light text for contrast
             fontSize: 40,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.deepPurple[800],
+        backgroundColor: const Color.fromARGB(255, 62, 78, 75), // Medium-dark AppBar
         centerTitle: true,
       ),
-
-
-
-      body: ListView(
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 15, right: 50),
-            minTileHeight: 160,
-            tileColor: Colors.deepPurple[800],
-            leading: const Icon(Icons.directions_bus, size: 40, color: Colors.white),
-            title: const Text('Bus', textScaleFactor: 2.4, textAlign: TextAlign.center),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const BusPage()));
-            },
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 15, right: 50),
-            minTileHeight: 160,
-            tileColor: Colors.deepPurple[600],
-            leading: const Icon(Icons.fastfood, size: 40, color: Colors.white),
-            title: const Text('Mess', textScaleFactor: 2.4, textAlign: TextAlign.center),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MessPage()));
-            },
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 15, right: 50),
-            minTileHeight: 160,
-            tileColor: Colors.deepPurple[400],
-            leading: const Icon(Icons.schedule, size: 40, color: Colors.white),
-            title: const Text('Timetable', textScaleFactor: 2.4, textAlign: TextAlign.center),
-            onTap: () {
-              Navigator.push(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Column(
+          children: [
+            const SizedBox(height: 15),
+            Expanded(
+              child: _buildMenuItem(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const TimetablePage(),
+                title: 'Bus',
+                icon: Icons.directions_bus,
+                color: const Color.fromARGB(255, 122, 133, 133),
+                destination: const BusPage(),
+              ),
+            ),
+            const SizedBox(height: 15),
+            Expanded(
+              child: _buildMenuItem(
+                context,
+                title: 'Mess',
+                icon: Icons.fastfood,
+                color: const Color.fromARGB(255, 122, 133, 133),
+                destination: const MessPage(),
+              ),
+            ),
+            const SizedBox(height: 15),
+            Expanded(
+              child: _buildMenuItem(
+                context,
+                title: 'Timetable',
+                icon: Icons.schedule,
+                color: const Color.fromARGB(255, 122, 133, 133),
+                destination: const TimetablePage(),
+              ),
+            ),
+            const SizedBox(height: 15),
+            Expanded(
+              child: _buildMenuItem(
+                context,
+                title: 'Events and Holidays',
+                icon: Icons.calendar_month,
+                color: const Color.fromARGB(255, 122, 133, 133),
+                destination: const EHPage(),
+              ),
+            ),
+            const SizedBox(height: 15),
+            Expanded(
+              child: _buildMenuItem(
+                context,
+                title: 'Debt Tracker',
+                icon: Icons.monetization_on,
+                color: const Color.fromARGB(255, 122, 133, 133),
+                destination: const DebtTrackerPage(),
+              ),
+            ),
+            const SizedBox(height: 45),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a full-width menu item with rounded corners
+  Widget _buildMenuItem(
+      BuildContext context, {
+        required String title,
+        required IconData icon,
+        required Color color,
+        required Widget destination,
+      }) {
+    return SizedBox(
+      width: double.infinity, // Full width
+      child: Material(
+        color: color, // Medium-dark grey background
+        borderRadius: BorderRadius.circular(20), // Rounded corners
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => destination));
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20), // Taller padding
+            child: Row(
+              children: [
+                Icon(icon, size: 50, color: const Color(0xFFE0E2DB)), // Light icons
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 26, // Bigger text
+                      fontWeight: FontWeight.bold,
+                      color: Color.fromARGB(255, 237, 240, 231), // Light text for contrast
+                    ),
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 15, right: 50),
-            minTileHeight: 160,
-            tileColor: Colors.deepPurple[200],
-            leading: const Icon(Icons.calendar_month, size: 40, color: Colors.white),
-            title: const Text('Events and Holidays', textScaleFactor: 2.4, textAlign: TextAlign.center),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const EHPage(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 15, right: 50),
-            minTileHeight: 160,
-            tileColor: Colors.deepPurple[100],
-            leading: const Icon(Icons.monetization_on, size: 40, color: Colors.white),
-            title: const Text('Debt Tracker', textScaleFactor: 2.4, textAlign: TextAlign.center),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DebtTrackerPage()),
-              );
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
