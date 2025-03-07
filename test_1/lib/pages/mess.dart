@@ -4,7 +4,7 @@ import '../api_service.dart';
 import 'dart:convert';
 
 class MessPage extends StatefulWidget {
-  const MessPage({Key? key}) : super(key: key);
+  const MessPage({super.key});
 
   @override
   _MessPageState createState() => _MessPageState();
