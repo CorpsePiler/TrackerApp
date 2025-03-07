@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api_service.dart';
+import 'dart:convert';
 
 class TimetablePage extends StatefulWidget {
   const TimetablePage({super.key});
@@ -11,15 +11,18 @@ class TimetablePage extends StatefulWidget {
 }
 
 class _TimetablePageState extends State<TimetablePage> {
-  late Future<List<Map<String, dynamic>>> data;
   late PageController _pageController;
 
+  // Updated timetable map to include all days (if needed).
   Map<String, List<Map<String, String>>> timetable = {
     'Monday': [],
     'Tuesday': [],
     'Wednesday': [],
     'Thursday': [],
     'Friday': [],
+    // If you want weekends, uncomment these:
+    // 'Saturday': [],
+    // 'Sunday': [],
   };
 
   String currentClass = "No class currently";
@@ -27,6 +30,7 @@ class _TimetablePageState extends State<TimetablePage> {
   String nextClass = "No class scheduled";
   String nextClassTime = "";
 
+  // Update the list if you add weekends.
   final List<String> daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
   final Map<String, String> apiUrls = {
@@ -37,6 +41,7 @@ class _TimetablePageState extends State<TimetablePage> {
   };
 
   String selectedOption = 'CSEA';
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -50,11 +55,20 @@ class _TimetablePageState extends State<TimetablePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? savedOption = prefs.getString('selectedTimetable');
     if (savedOption != null && apiUrls.containsKey(savedOption)) {
-      setState(() {
-        selectedOption = savedOption;
-      });
+      selectedOption = savedOption;
     }
-    _fetchData();
+    
+    String? savedData = prefs.getString('timetable_data_$selectedOption');
+    if (savedData != null) {
+      List<Map<String, dynamic>> jsonData =
+          List<Map<String, dynamic>>.from(json.decode(savedData));
+      _processTimetableData(jsonData);
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      await _fetchData();
+    }
   }
 
   Future<void> _saveSelectedOption(String option) async {
@@ -62,236 +76,208 @@ class _TimetablePageState extends State<TimetablePage> {
     await prefs.setString('selectedTimetable', option);
   }
 
-  void _fetchData() {
+  Future<void> _fetchData() async {
     setState(() {
-      data = ApiService(apiUrl: apiUrls[selectedOption]!).fetchData();
+      isLoading = true;
+    });
+    try {
+      final response =
+          await ApiService(apiUrl: apiUrls[selectedOption]!).fetchData();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          'timetable_data_$selectedOption', json.encode(response));
+      _processTimetableData(response);
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+    setState(() {
+      isLoading = false;
     });
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Timetable',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 30,
-          ),
-        ),
-        backgroundColor: Colors.deepPurple[800],
-        centerTitle: true,
-      ),
-      body: Column(
-        children: [
-          // Dropdown to select timetable option
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
-              value: selectedOption,
-              items: apiUrls.keys.map((String key) {
-                return DropdownMenuItem<String>(
-                  value: key,
-                  child: Text(key, style: const TextStyle(fontSize: 18)),
-                );
-              }).toList(),
-              onChanged: (newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    selectedOption = newValue;
-                    _saveSelectedOption(newValue);
-                    _fetchData();
-                  });
-                }
-              },
-            ),
-          ),
-
-          // Current Class Widget
-          Card(
-            color: Colors.green.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                currentClass == "No class currently"
-                    ? "No class ongoing"
-                    : "Current Class: $currentClass (Ends at $currentClassEndTime)",
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          // Next Class Widget
-          Card(
-            color: Colors.blue.shade100,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                nextClass == "No class scheduled"
-                    ? "No upcoming classes"
-                    : "Next Class: $nextClass (At $nextClassTime)",
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-
-          // Timetable
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: data,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No data found.'));
-                }
-
-                timetable.forEach((key, value) => value.clear());
-
-                for (var entry in snapshot.data!) {
-                  String day = entry['Day'];
-                  String time = entry['Time'];
-                  String subject = entry['Subject'];
-
-                  if (timetable.containsKey(day)) {
-                    timetable[day]!.add({'Time': time, 'Subject': subject});
-                  }
-                }
-
-                // Determine current and next class
-                SchedulerBinding.instance.addPostFrameCallback((_) {
-                  _findCurrentAndNextClass();
-                });
-
-                return PageView.builder(
-                  controller: _pageController,
-                  itemCount: daysOfWeek.length,
-                  itemBuilder: (context, index) {
-                    String day = daysOfWeek[index];
-                    List<Map<String, String>> classesForDay = timetable[day]!
-                        .where((entry) => entry['Subject'] != null && entry['Subject']!.isNotEmpty)
-                        .toList();
-
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            day,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: classesForDay.length,
-                            itemBuilder: (context, index) {
-                              String timeSlot = classesForDay[index]['Time'] ?? '';
-                              String subject = classesForDay[index]['Subject'] ?? '';
-                              return Card(
-                                child: ListTile(
-                                  title: Text(subject),
-                                  subtitle: Text(timeSlot),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  DateTime _parseTime(String time, {bool end = false}) {
-  try {
-    // Trim any extra spaces
-    time = time.trim();
-
-    // Handle 12-hour format with AM/PM
-    final regExp = RegExp(r'(\d{1,2}):(\d{2})\s?(AM|PM)?', caseSensitive: false);
-    final match = regExp.firstMatch(time);
-
-    if (match == null) {
-      throw FormatException("Invalid time format: $time");
-    }
-
-    int hours = int.parse(match.group(1)!);
-    int minutes = int.parse(match.group(2)!);
-    String? period = match.group(3)?.toUpperCase();
-
-    // Convert 12-hour format to 24-hour format if AM/PM is present
-    if (period != null) {
-      if (period == "PM" && hours != 12) {
-        hours += 12; // Convert PM times (except 12 PM)
-      } else if (period == "AM" && hours == 12) {
-        hours = 0; // Convert 12 AM to 00
+  void _processTimetableData(List<Map<String, dynamic>> data) {
+    // Clear existing data
+    timetable.forEach((key, value) => value.clear());
+    for (var entry in data) {
+      String day = entry['Day'];
+      String time = entry['Time'];
+      String subject = entry['Subject'];
+      if (timetable.containsKey(day)) {
+        timetable[day]!.add({'Time': time, 'Subject': subject});
       }
     }
-
-    return DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, hours, minutes);
-  } catch (e) {
-    print("Error parsing time: $time, Error: $e");
-    return DateTime.now(); // Default fallback time
+    _findCurrentAndNextClass();
   }
-}
 
+  String _getCurrentDay() => daysOfWeek[DateTime.now().weekday - 1];
+  int _getCurrentDayIndex() => DateTime.now().weekday - 1;
+
+  DateTime _parseTime(String time) {
+    try {
+      final regExp = RegExp(
+          r'(\d{1,2}):(\d{2})\s?(AM|PM)?',
+          caseSensitive: false);
+      final match = regExp.firstMatch(time.trim());
+
+      if (match == null) return DateTime.now();
+
+      int hours = int.parse(match.group(1)!);
+      int minutes = int.parse(match.group(2)!);
+      String? period = match.group(3)?.toUpperCase();
+
+      if (period != null) {
+        if (period == "PM" && hours != 12) hours += 12;
+        if (period == "AM" && hours == 12) hours = 0;
+      }
+
+      return DateTime(DateTime.now().year, DateTime.now().month,
+          DateTime.now().day, hours, minutes);
+    } catch (e) {
+      return DateTime.now();
+    }
+  }
 
   void _findCurrentAndNextClass() {
     DateTime now = DateTime.now();
     String today = _getCurrentDay();
     List<Map<String, String>> todayClasses = timetable[today] ?? [];
 
-    String newCurrentClass = "No class currently";
-    String newCurrentClassEndTime = "";
-    String newNextClass = "No class scheduled";
-    String newNextClassTime = "";
+    currentClass = "No class currently";
+    currentClassEndTime = "";
+    nextClass = "No class scheduled";
+    nextClassTime = "";
 
     for (var entry in todayClasses) {
-      DateTime classStart = _parseTime(entry['Time']!);
-      DateTime classEnd = _parseTime(entry['Time']!, end: true);
+      DateTime classStart = _parseTime(entry['Time']!.split(' - ')[0]);
+      DateTime classEnd = _parseTime(entry['Time']!.split(' - ')[1]);
       String subject = entry['Subject']!;
 
       if (now.isAfter(classStart) && now.isBefore(classEnd)) {
-        newCurrentClass = subject;
-        newCurrentClassEndTime = entry['Time']!.split(' - ')[1];
-      } else if (classStart.isAfter(now) && newNextClass == "No class scheduled") {
-        newNextClass = subject;
-        newNextClassTime = entry['Time']!;
+        currentClass = subject;
+        currentClassEndTime = entry['Time']!.split(' - ')[1];
+      } else if (classStart.isAfter(now) && nextClass == "No class scheduled") {
+        nextClass = subject;
+        nextClassTime = entry['Time']!;
       }
     }
-
-    setState(() {
-      currentClass = newCurrentClass;
-      currentClassEndTime = newCurrentClassEndTime;
-      nextClass = newNextClass;
-      nextClassTime = newNextClassTime;
-    });
+    setState(() {});
   }
 
-  String _getCurrentDay() => daysOfWeek[DateTime.now().weekday - 1];
-
-  int _getCurrentDayIndex() => DateTime.now().weekday - 1;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title:
+            const Text('Timetable', style: TextStyle(color: Colors.white, fontSize: 30)),
+        backgroundColor: Colors.deepPurple[800],
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _fetchData,
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // Dropdown to select timetable section.
+                DropdownButton<String>(
+                  value: selectedOption,
+                  items: apiUrls.keys.map((String key) {
+                    return DropdownMenuItem<String>(
+                      value: key,
+                      child: Text(key, style: const TextStyle(fontSize: 18)),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) async {
+                    if (newValue != null) {
+                      setState(() {
+                        selectedOption = newValue;
+                        isLoading = true;
+                      });
+                      await _saveSelectedOption(newValue);
+                      await _loadSavedOption();
+                    }
+                  },
+                ),
+                // Display current class information.
+                Card(
+                  color: Colors.green.shade100,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      currentClass == "No class currently"
+                          ? "No class ongoing"
+                          : "Current Class: $currentClass (Ends at $currentClassEndTime)",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                // Display next class information.
+                Card(
+                  color: Colors.blue.shade100,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      nextClass == "No class scheduled"
+                          ? "No upcoming classes"
+                          : "Next Class: $nextClass (At $nextClassTime)",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                // PageView with a header for the day.
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    itemCount: daysOfWeek.length,
+                    itemBuilder: (context, index) {
+                      String day = daysOfWeek[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              day,
+                              style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: timetable[day]?.length ?? 0,
+                              itemBuilder: (context, i) {
+                                var entry = timetable[day]![i];
+                                return Card(
+                                  elevation: 3,
+                                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  child: ListTile(
+                                    title: Text(entry['Subject'] ?? ''),
+                                    subtitle: Text(entry['Time'] ?? ''),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
 }

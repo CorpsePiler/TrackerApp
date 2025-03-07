@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EHPage extends StatefulWidget {
-  const EHPage({Key? key}) : super(key: key);
+  const EHPage({super.key});
 
   @override
   _EHPageState createState() => _EHPageState();
@@ -17,6 +18,18 @@ class _EHPageState extends State<EHPage> {
   @override
   void initState() {
     super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedData = prefs.getString('holidays_data');
+    if (savedData != null) {
+      setState(() {
+        holidays = json.decode(savedData);
+        isLoading = false;
+      });
+    }
     fetchData();
   }
 
@@ -24,11 +37,12 @@ class _EHPageState extends State<EHPage> {
     try {
       final response = await http.get(Uri.parse(apiUrl)).timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
-        print('Raw Data: ${response.body}');
         final data = json.decode(response.body);
         if (data is List) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('holidays_data', json.encode(data));
           setState(() {
-            holidays = data; // Directly assign the list
+            holidays = data;
             isLoading = false;
           });
         } else {
@@ -58,6 +72,17 @@ class _EHPageState extends State<EHPage> {
         ),
         backgroundColor: const Color.fromRGBO(179, 157, 219, 1),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.black),
+            onPressed: () {
+              setState(() {
+                isLoading = true;
+              });
+              fetchData();
+            },
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -67,10 +92,26 @@ class _EHPageState extends State<EHPage> {
                   itemCount: holidays.length,
                   itemBuilder: (context, index) {
                     final event = holidays[index];
-                    print('Event: $event');
-                    return ListTile(
-                      title: Text(event['Event'] ?? 'No Event'),
-                      subtitle: Text('${event['Date'] ?? ''} - ${event['Day'] ?? ''}'),
+                    return Card(
+                      elevation: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              event['Event'] ?? 'No Event',
+                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${event['Date'] ?? ''} - ${event['Day'] ?? ''}',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),

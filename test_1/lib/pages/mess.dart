@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api_service.dart';
+import 'dart:convert';
 
 class MessPage extends StatefulWidget {
-  const MessPage({super.key});
+  const MessPage({Key? key}) : super(key: key);
 
   @override
   _MessPageState createState() => _MessPageState();
 }
 
 class _MessPageState extends State<MessPage> {
-  late Future<List<Map<String, dynamic>>> data;
   late PageController _pageController;
 
   Map<String, List<Map<String, String>>> messMenu = {
@@ -36,12 +36,14 @@ class _MessPageState extends State<MessPage> {
   final String apiUrl =
       'https://script.google.com/macros/s/AKfycbzZ1ctMGkHygQpuxKXQXLn-Yz1DMRQuuC0IH_zfnj8xPjpEWV1jGVNpP0I4lqaOiMzy/exec?sheet=MESS';
 
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    data = ApiService(apiUrl: apiUrl).fetchData();
     int currentDayIndex = _getCurrentDayIndex();
     _pageController = PageController(initialPage: currentDayIndex);
+    _loadSavedData();
   }
 
   @override
@@ -50,80 +52,111 @@ class _MessPageState extends State<MessPage> {
     super.dispose();
   }
 
+  Future<void> _loadSavedData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedData = prefs.getString('mess_menu_data');
+    if (savedData != null) {
+      List<Map<String, dynamic>> jsonData = List<Map<String, dynamic>>.from(json.decode(savedData));
+      _processMessMenuData(jsonData);
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      await _fetchData();
+    }
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final response = await ApiService(apiUrl: apiUrl).fetchData();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('mess_menu_data', json.encode(response));
+      _processMessMenuData(response);
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  void _processMessMenuData(List<Map<String, dynamic>> data) {
+    messMenu.forEach((key, value) => value.clear());
+    for (var entry in data) {
+      String day = entry['Day'];
+      String meal = entry['Meal'];
+      String item = entry['Item'];
+
+      if (messMenu.containsKey(day)) {
+        messMenu[day]!.add({'Meal': meal, 'Item': item});
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'Mess Menu',
-          style: TextStyle(color: Colors.black, fontSize: 30),
+          style: TextStyle(fontSize: 26, color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple[800],
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: _fetchData,
+          ),
+        ],
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: data,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No data found.'));
-          }
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : PageView.builder(
+              controller: _pageController,
+              itemCount: daysOfWeek.length,
+              itemBuilder: (context, index) {
+                String day = daysOfWeek[index];
+                List<Map<String, String>> mealsForDay = messMenu[day]!;
 
-          // Populate messMenu with fetched data
-          messMenu.forEach((key, value) => value.clear());
-          for (var entry in snapshot.data!) {
-            String day = entry['Day'];
-            String meal = entry['Meal'];
-            String item = entry['Item'];
-
-            if (messMenu.containsKey(day)) {
-              messMenu[day]!.add({'Meal': meal, 'Item': item});
-            }
-          }
-
-          return PageView.builder(
-            controller: _pageController,
-            itemCount: daysOfWeek.length,
-            itemBuilder: (context, index) {
-              String day = daysOfWeek[index];
-              List<Map<String, String>> mealsForDay = messMenu[day]!;
-
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      day,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        day,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: mealsForDay.length,
-                      itemBuilder: (context, index) {
-                        String meal = mealsForDay[index]['Meal'] ?? '';
-                        String item = mealsForDay[index]['Item'] ?? '';
-                        return Card(
-                          child: ListTile(
-                            title: Text(meal),
-                            subtitle: Text(item),
-                          ),
-                        );
-                      },
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: mealsForDay.length,
+                        itemBuilder: (context, index) {
+                          String meal = mealsForDay[index]['Meal'] ?? '';
+                          String item = mealsForDay[index]['Item'] ?? '';
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            child: ListTile(
+                              leading: const Icon(Icons.restaurant_menu, color: Colors.deepPurple),
+                              title: Text(meal, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text(item),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
+                  ],
+                );
+              },
+            ),
     );
   }
 
