@@ -119,14 +119,14 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
           actions: [
             TextButton(
               style: ButtonStyle(
-                foregroundColor: MaterialStateProperty.all(const Color(0xFFE0E2DB)),
+                foregroundColor: WidgetStateProperty.all(const Color(0xFFE0E2DB)),
               ),
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 122, 133, 133)),
+                backgroundColor: WidgetStateProperty.all(const Color.fromARGB(255, 122, 133, 133)),
               ),
               onPressed: () {
                 if (name.isNotEmpty && amount > 0) {

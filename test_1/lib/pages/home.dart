@@ -26,7 +26,7 @@ class HomePage extends StatelessWidget {
           'chub',
           style: TextStyle(
             color: Color(0xFFE0E2DB), // Light text for contrast
-            fontSize: 60,
+            fontSize: 72,
             fontWeight: FontWeight.bold,
           ),
         ),
