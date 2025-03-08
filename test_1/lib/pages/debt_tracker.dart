@@ -14,7 +14,7 @@ class DebtTrackerApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
+        primarySwatch: Colors.blueGrey,
       ),
       home: const DebtTrackerPage(),
     );
@@ -87,15 +87,19 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text("Add Debt"),
+          backgroundColor: const Color.fromARGB(255, 62, 78, 75),
+          title: const Text("Add Debt", style: TextStyle(color: const Color(0xFFE0E2DB))),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: const InputDecoration(labelText: "Name"),
+                style: const TextStyle(color: const Color(0xFFE0E2DB)),
+                decoration: const InputDecoration(labelText: "Name", labelStyle: TextStyle(color: const Color(0xFFE0E2DB))),
                 onChanged: (value) => name = value,
               ),
               DropdownButtonFormField<String>(
+                style: const TextStyle(color: const Color(0xFFE0E2DB)), dropdownColor: const Color.fromARGB(255, 122, 133, 133),
+                decoration: const InputDecoration(labelText: "Type", labelStyle: TextStyle(color: const Color(0xFFE0E2DB))),
                 value: type,
                 items: ["I owe", "Owes me"]
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -103,7 +107,8 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
                 onChanged: (value) => type = value!,
               ),
               TextField(
-                decoration: const InputDecoration(labelText: "Amount"),
+                style: const TextStyle(color: const Color(0xFFE0E2DB)),
+                decoration: const InputDecoration(labelText: "Amount", labelStyle: TextStyle(color: const Color(0xFFE0E2DB))),
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
                   amount = double.tryParse(value) ?? 0.0;
@@ -113,10 +118,16 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
           ),
           actions: [
             TextButton(
+              style: ButtonStyle(
+                foregroundColor: MaterialStateProperty.all(const Color(0xFFE0E2DB)),
+              ),
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
             ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 122, 133, 133)),
+              ),
               onPressed: () {
                 if (name.isNotEmpty && amount > 0) {
                   setState(() {
@@ -126,7 +137,7 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
                   Navigator.pop(context);
                 }
               },
-              child: const Text("Add"),
+              child: const Text("Add", style: TextStyle(color: const Color(0xFFE0E2DB))),
             ),
           ],
         );
@@ -145,6 +156,7 @@ class _DebtTrackerPageState extends State<DebtTrackerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
 appBar: AppBar(
+        toolbarHeight: 80,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: const Color(0xFFE0E2DB)),
           onPressed: () {
@@ -166,7 +178,8 @@ appBar: AppBar(
 
       backgroundColor: const Color.fromARGB(255, 62, 78, 75),
           body: debts.isEmpty
-          ? const Center(child: Text("No debts added yet!"))
+          ? const Center(child: Text("No debts added yet!", style: TextStyle(color: const Color(0xFFE0E2DB), fontSize: 30))
+          )
           : ListView.builder(
               itemCount: debts.length,
               itemBuilder: (context, index) {

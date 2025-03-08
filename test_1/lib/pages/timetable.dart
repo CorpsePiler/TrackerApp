@@ -112,7 +112,14 @@ class _TimetablePageState extends State<TimetablePage> {
     _findCurrentAndNextClass();
   }
 
-  String _getCurrentDay() => daysOfWeek[DateTime.now().weekday - 1];
+  String _getCurrentDay() {
+    int weekday = DateTime.now().weekday;
+    if (weekday >= 6) {
+      return 'Friday';  // Default to Friday for Saturday/Sunday
+    }
+    return daysOfWeek[weekday - 1];
+  }
+  
   int _getCurrentDayIndex() => DateTime.now().weekday - 1;
 
   DateTime _parseTime(String time) {
@@ -191,10 +198,12 @@ class _TimetablePageState extends State<TimetablePage> {
                 DropdownButton<String>(
                   dropdownColor: const Color.fromARGB(255, 122, 133, 133),
                   itemHeight: 60,
-                  icon: const Icon(Icons.arrow_drop_down),
+                  icon: const Icon(Icons.arrow_drop_down, color: const Color(0xFFE0E2DB)),
                   iconSize: 36,
                   borderRadius: BorderRadius.circular(10),
+                  underline: const SizedBox(),
                   value: selectedOption,
+
                   items: apiUrls.keys.map((String key) {
                     return DropdownMenuItem<String>(
                       value: key,

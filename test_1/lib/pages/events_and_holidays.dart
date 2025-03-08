@@ -64,6 +64,7 @@ class _EHPageState extends State<EHPage> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 62, 78, 75),
       appBar: AppBar(
+        toolbarHeight: 80,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: const Color(0xFFE0E2DB)),
           onPressed: () {
@@ -75,7 +76,7 @@ class _EHPageState extends State<EHPage> {
           'Events and Holidays',
           style: TextStyle(
             color: const Color(0xFFE0E2DB),
-            fontSize: 30,
+            fontSize: 28,
           ),
         ),
         centerTitle: true,

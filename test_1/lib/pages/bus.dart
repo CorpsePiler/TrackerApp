@@ -124,9 +124,9 @@ class _BusPageState extends State<BusPage> {
                 // Next Bus Widget
                 Card(
                   color: const Color.fromARGB(255, 122, 133, 133),
-                  margin: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(25),
                   child: Padding(
-                    padding: const EdgeInsets.all(15.0),
+                    padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
                         const Text(
@@ -158,6 +158,8 @@ class _BusPageState extends State<BusPage> {
                       const Text("Weekday", style: TextStyle(fontSize: 16, color: Color(0xFFE0E2DB))),
                       Switch(
                         activeColor: const Color(0xFFE0E2DB),
+                        inactiveThumbColor: const Color.fromARGB(255, 122, 133, 133),
+                        inactiveTrackColor: const Color(0xFFE0E2DB),
                         value: selectedSchedule == "Weekend/Holiday",
                         onChanged: (bool value) {
                           setState(() {
@@ -178,7 +180,7 @@ class _BusPageState extends State<BusPage> {
                   itemBuilder: (context, index) {
                     final bus = busSchedule[selectedSchedule]![index];
                     return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.0), // Adjust radius as needed
                       ),
