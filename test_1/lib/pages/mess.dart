@@ -103,7 +103,7 @@ class _MessPageState extends State<MessPage> {
       appBar: AppBar(
         title: const Text(
           'Mess Menu',
-          style: TextStyle(fontSize: 26, color: const Color(0xFFE0E2DB)),
+          style: TextStyle(fontSize: 30, color: const Color(0xFFE0E2DB)),
         ),
         backgroundColor: const Color.fromARGB(255, 62, 78, 75),
         centerTitle: true,
@@ -149,7 +149,7 @@ class _MessPageState extends State<MessPage> {
                             margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                             child: ListTile(
                               leading: const Icon(Icons.restaurant_menu, color: Color.fromARGB(255, 236, 238, 232)),
-                              title: Text(meal, style: const TextStyle(fontWeight: FontWeight.bold, color: Color.fromARGB(255, 242, 243, 238))),
+                              title: Text(meal, style: const TextStyle(fontSize: 32,fontWeight: FontWeight.bold, color: Color.fromARGB(255, 242, 243, 238))),
                               subtitle: Text(item, style: const TextStyle(color: Color.fromARGB(255, 201, 202, 196))),
                             ),
                           );

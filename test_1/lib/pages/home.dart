@@ -23,10 +23,10 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         toolbarHeight: 100,
         title: const Text(
-          'Tracker',
+          'chub',
           style: TextStyle(
             color: Color(0xFFE0E2DB), // Light text for contrast
-            fontSize: 40,
+            fontSize: 60,
             fontWeight: FontWeight.bold,
           ),
         ),
