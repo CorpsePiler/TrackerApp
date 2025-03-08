@@ -23,9 +23,8 @@ class _TimetablePageState extends State<TimetablePage> {
     'Wednesday': [],
     'Thursday': [],
     'Friday': [],
-    // If you want weekends, uncomment these:
-    // 'Saturday': [],
-    // 'Sunday': [],
+    'Saturday': [],
+    'Sunday': [],
   };
 
   String currentClass = "No class currently";
@@ -33,8 +32,7 @@ class _TimetablePageState extends State<TimetablePage> {
   String nextClass = "No class scheduled";
   String nextClassTime = "";
 
-  // Update the list if you add weekends.
-  final List<String> daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+  final List<String> daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday','Saturday','Sunday'];
 
   final Map<String, String> apiUrls = {
     'CSEA': 'https://script.google.com/macros/s/AKfycbzZ1ctMGkHygQpuxKXQXLn-Yz1DMRQuuC0IH_zfnj8xPjpEWV1jGVNpP0I4lqaOiMzy/exec?sheet=CSEA',
@@ -112,14 +110,7 @@ class _TimetablePageState extends State<TimetablePage> {
     _findCurrentAndNextClass();
   }
 
-  String _getCurrentDay() {
-    int weekday = DateTime.now().weekday;
-    if (weekday >= 6) {
-      return 'Friday';  // Default to Friday for Saturday/Sunday
-    }
-    return daysOfWeek[weekday - 1];
-  }
-  
+  String _getCurrentDay() => daysOfWeek[DateTime.now().weekday - 1];
   int _getCurrentDayIndex() => DateTime.now().weekday - 1;
 
   DateTime _parseTime(String time) {
